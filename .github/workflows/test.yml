@@ -51,7 +51,7 @@ jobs:
           echo "Checking container logs for successful execution..."
           # Since the config is invalid for the real autoremove-torrents binary (missing type/client variables),
           # we just verify that it successfully attempted to run and output the expected starting sequence.
-          logs=$(docker logs test-container)
+          logs=$(docker logs test-container 2>&1)
           echo "$logs"
           
           if ! echo "$logs" | grep -q "Starting autoremove-torrents loop..."; then
