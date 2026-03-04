@@ -1,0 +1,11 @@
+services:
+  autoremove-torrents:
+    image: ghcr.io/lululoe/autoremove-torrents:latest
+    container_name: autoremove-torrents
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - INTERVAL=3600
+    volumes:
+      - /path/to/my/config:/config # Place config.yml inside here
+    restart: unless-stopped

@@ -1,0 +1,26 @@
+name: publish
+
+on: [push]
+
+jobs:
+  publish-autoremove-torrents-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push the autoremove-torrents Docker image
+        run: |
+          docker build . --tag ghcr.io/lululoe/autoremove-torrents:latest
+          
+          # Added --rm to avoid leaving a stopped container behind, and overrode
+          # the entrypoint to test execution without hanging the CI pipeline in the sleep loop.
+          docker run --rm --entrypoint python ghcr.io/lululoe/autoremove-torrents:latest -c "import run"
+          
+          docker push ghcr.io/lululoe/autoremove-torrents:latest
