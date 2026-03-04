@@ -25,10 +25,10 @@ jobs:
         run: |
           docker run --name test-container -d \
             -e PUID=1000 -e PGID=1000 -e INTERVAL=5 \
-            -e ART_MY_CLIENT__HOST=1.2.3.4 \
-            -e ART_MY_CLIENT__USERNAME=admin \
-            -e ART_MY_CLIENT__PASSWORD=password123 \
-            -e ART_MY_CLIENT__SOME_FLAG=true \
+            -e CONFIG_MY_CLIENT__HOST=1.2.3.4 \
+            -e CONFIG_MY_CLIENT__USERNAME=admin \
+            -e CONFIG_MY_CLIENT__PASSWORD=password123 \
+            -e CONFIG_MY_CLIENT__SOME_FLAG=true \
             autoremove-torrents-test
 
           echo "Waiting for container..."

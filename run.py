@@ -6,15 +6,15 @@ import sys
 
 def parse_env_to_dict():
     """
-    Parses environment variables prefixed with ART_ into a nested dictionary.
+    Parses environment variables prefixed with CONFIG_ into a nested dictionary.
     Keys are split by __ to create nested structures. 
-    E.g. ART_QBITTORRENT__HOST=127.0.0.1 -> {'qbittorrent': {'host': '127.0.0.1'}}
+    E.g. CONFIG_QBITTORRENT__HOST=127.0.0.1 -> {'qbittorrent': {'host': '127.0.0.1'}}
     """
     from typing import Dict, Any
     config: Dict[str, Any] = {}
     for key, value in os.environ.items():
-        if key.startswith("ART_") and len(key) > 4:
-            path = key[4:]
+        if key.startswith("CONFIG_") and len(key) > 7:
+            path = key[7:]
             parts = path.split("__")
             
             current: Any = config

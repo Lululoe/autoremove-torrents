@@ -55,17 +55,17 @@ The following tags are available on the GitHub Container Registry (`ghcr.io/lulu
 
 ### Dynamic Environment Mapping
 
-You can override or define configuration values by prepending variables with `ART_`. You can use double underscores `__` to map nested YAML properties.
+You can override or define configuration values by prepending variables with `CONFIG_`. You can use double underscores `__` to map nested YAML properties.
 Keys will be lowercased automatically during configuration generation.
 
-*Example:* `ART_QBITTORRENT__HOST=192.168.1.1` becomes:
+*Example:* `CONFIG_QBITTORRENT__HOST=192.168.1.1` becomes:
 
 ```yaml
 qbittorrent:
   host: 192.168.1.1
 ```
 
-*Example:* `ART_QBITTORRENT__USERNAME=admin` and `ART_QBITTORRENT__PASSWORD=secret` becomes:
+*Example:* `CONFIG_QBITTORRENT__USERNAME=admin` and `CONFIG_QBITTORRENT__PASSWORD=secret` becomes:
 
 ```yaml
 qbittorrent:
