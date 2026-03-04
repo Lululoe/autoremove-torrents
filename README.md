@@ -15,7 +15,7 @@ docker run -d \
   -e PGID=1000 \
   -e INTERVAL=3600 \
   -v /path/to/my/config.yml:/config/config.yml \
-  autoremove-torrents
+  ghcr.io/lululoe/autoremove-torrents:latest
 ```
 
 ### Docker Compose
@@ -23,7 +23,7 @@ docker run -d \
 ```yaml
 services:
   autoremove-torrents:
-    image: autoremove-torrents
+    image: ghcr.io/lululoe/autoremove-torrents:latest
     container_name: autoremove-torrents
     environment:
       - PUID=1000
@@ -33,6 +33,16 @@ services:
       - /path/to/my/config:/config # Place config.yml inside here
     restart: unless-stopped
 ```
+
+## Tags and Architectures
+
+This image is built for both `linux/amd64` and `linux/arm64` architectures.
+
+The following tags are available on the GitHub Container Registry (`ghcr.io/lululoe/autoremove-torrents`):
+- `latest`: The most recent stable release.
+- `{major}.{minor}` (e.g. `1.5`): Follows the latest patch release for the given minor version.
+- `{version}` (e.g. `1.5.0`): A specific, immutable release version.
+- `edge`: The latest unstable pipeline build from the `main` branch.
 
 ## Environment Variables
 

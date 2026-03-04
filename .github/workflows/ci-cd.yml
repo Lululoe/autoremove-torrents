@@ -1,0 +1,120 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Test Config Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build local image for testing
+        run: docker build -t autoremove-torrents-test .
+
+      - name: Run validation tests
+        run: |
+          docker run --name test-container -d \
+            -e PUID=1000 -e PGID=1000 -e INTERVAL=5 \
+            -e ART_MY_CLIENT__HOST=1.2.3.4 \
+            -e ART_MY_CLIENT__USERNAME=admin \
+            -e ART_MY_CLIENT__PASSWORD=password123 \
+            -e ART_MY_CLIENT__SOME_FLAG=true \
+            autoremove-torrents-test
+
+          echo "Waiting for container..."
+          sleep 5
+
+          docker exec test-container cat /tmp/config.yml > generated_config.yml
+          
+          # Assertions
+          grep -q "my_client:" generated_config.yml
+          grep -q "host: 1.2.3.4" generated_config.yml
+          grep -q "username: admin" generated_config.yml
+          grep -q "password: password123" generated_config.yml
+          grep -q "some_flag: true" generated_config.yml
+          
+          echo "Config generation tests passed!"
+
+      - name: Check execution logs
+        run: |
+          logs=$(docker logs test-container 2>&1)
+          echo "$logs" | grep -q "Starting autoremove-torrents loop..."
+          echo "$logs" | grep -q "Loading configurations..."
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f test-container || true
+
+  publish:
+    name: Build and Push to GHCR
+    needs: test
+    if: github.event_name != 'pull_request' 
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=edge,branch=main
+          flavor: |
+            latest=auto
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  create-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generate_release_notes: true 
+          draft: false
+          prerelease: false
